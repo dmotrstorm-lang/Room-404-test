@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ROOM 404</title><meta name="color-scheme" content="dark">
+<style>:root{--bg:#111113;--surf:#252326;--wall:#514A48;--warm:#A18C78;--text:#B8B0A2;--term:#A0B59B}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:"Courier New",ui-monospace,monospace;
+ -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;overflow:hidden}
+#app{position:fixed;inset:0}
+.screen{position:absolute;inset:0;display:none}
+.screen.active{display:flex;animation:in .8s ease both}
+@keyframes in{from{opacity:0}to{opacity:1}}
+.btn{font:inherit;color:var(--text);background:transparent;border:1px solid var(--wall);padding:.85em 1.4em;min-height:44px;cursor:pointer;
+ letter-spacing:.18em;position:relative;overflow:hidden;transition:letter-spacing .35s,border-color .3s,color .3s}
+.btn::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(160,181,155,.16),transparent);transform:translateX(-110%);transition:transform .6s}
+.btn:hover:not(:disabled),.btn:focus-visible{letter-spacing:.28em;border-color:var(--term);color:var(--term);outline:none}
+.btn:hover:not(:disabled)::before{transform:translateX(110%)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.small{padding:.4em .9em;letter-spacing:.1em;font-size:.8rem}
+#modal{position:fixed;inset:0;background:rgba(5,5,6,.82);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#modal[hidden]{display:none}
+.panel{background:var(--surf);border:1px solid var(--wall);padding:24px;max-width:420px;width:100%;line-height:1.6;box-shadow:0 0 60px #000}
+.panel h2{margin:0 0 12px;font-weight:400;letter-spacing:.2em;color:var(--warm)}
+.panel .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.panel input[type=range]{width:100%;accent-color:var(--term)}
+</style><style>#menu{align-items:center;justify-content:center;overflow:hidden}
+#menu-bg{position:absolute;inset:-4%;filter:blur(2px) brightness(.55);animation:drift 40s ease-in-out infinite alternate}
+#menu-bg svg{width:100%;height:100%;display:block}
+#menu-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 60%,rgba(161,140,120,.25),transparent 55%);animation:lamp 7s ease-in-out infinite}
+@keyframes drift{to{transform:scale(1.06) translate(-1.5%,1%)}}
+@keyframes lamp{0%,100%{opacity:.9}45%{opacity:.5}50%{opacity:1}55%{opacity:.6}}
+.menu-inner{position:relative;text-align:center;padding:20px;display:flex;flex-direction:column;align-items:center}
+.title{font-weight:400;font-size:clamp(2.6rem,11vw,6rem);letter-spacing:.3em;margin:0 0 .2em -.3em;color:#d6cec0;position:relative}
+.tag{font-style:italic;max-width:30ch;opacity:.75;margin:0 0 2.2rem;line-height:1.5}
+.menu-nav{display:flex;flex-direction:column;gap:12px;width:min(280px,80vw)}
+</style>
+<style>#game{flex-direction:column}
+.hud{display:flex;align-items:center;gap:14px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px;border-bottom:1px solid #1d1b1c}
+#scene-title{opacity:.6;letter-spacing:.2em;font-size:.8rem}
+#stage-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px}
+#stage{position:relative;aspect-ratio:16/9;width:min(100%,calc((100dvh - 230px)*16/9));overflow:hidden;background:#000;border:1px solid #1d1b1c;transition:opacity .7s}
+#stage.fading{opacity:0}
+#scene-art,#scene-art svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+#hotspots{position:absolute;inset:0}
+.hs{position:absolute;cursor:pointer;border-radius:3px;transition:background .25s,box-shadow .25s}
+.hs::after{content:"";position:absolute;inset:-8px}
+.hs:hover,.hs:focus-visible{background:rgba(160,181,155,.1);box-shadow:inset 0 0 0 1px rgba(160,181,155,.4);outline:none}
+body.has-sel .hs{cursor:crosshair}
+#hover-label{position:absolute;left:10px;bottom:8px;font-size:.8rem;letter-spacing:.15em;color:var(--term);pointer-events:none;opacity:0;transition:opacity .2s;text-shadow:0 0 6px #000}
+#hover-label.on{opacity:1}
+#dialogue{min-height:78px;padding:12px 16px;border-top:1px solid #1d1b1c;position:relative;cursor:pointer;line-height:1.55}
+#dlg-text{margin:0 auto;max-width:70ch;min-height:3.1em}
+#dlg-more{position:absolute;right:16px;bottom:8px;color:var(--term);animation:blink 1s infinite;display:none}
+#dialogue.more #dlg-more{display:block}
+@keyframes blink{50%{opacity:.1}}
+#inventory{display:flex;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom));min-height:68px;border-top:1px solid #1d1b1c;align-items:center}
+.slot{min-width:56px;height:52px;padding:0 10px;border:1px solid var(--wall);display:flex;align-items:center;justify-content:center;font-size:.7rem;letter-spacing:.08em;cursor:pointer;background:var(--surf);transition:border-color .2s}
+.slot.sel{border-color:var(--term);color:var(--term);box-shadow:0 0 12px rgba(160,181,155,.25)}
+.inv-empty{opacity:.35;font-size:.75rem;letter-spacing:.15em}
+.led{animation:blink 1.1s steps(2) infinite}
+@media(max-width:600px){#stage{width:100%}}
+</style><style>#fx-grain{position:fixed;inset:-50%;pointer-events:none;z-index:90;opacity:.11;mix-blend-mode:overlay;
+ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+ animation:grain .9s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-4%,3%)}40%{transform:translate(3%,-5%)}60%{transform:translate(-5%,-2%)}80%{transform:translate(4%,4%)}100%{transform:translate(0,0)}}
+#fx-vignette{position:fixed;inset:0;pointer-events:none;z-index:89;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.7) 100%)}
+.title,#scene-title{text-shadow:-1.5px 0 rgba(200,70,70,.35),1.5px 0 rgba(70,170,200,.35)}
+#app{animation:flick 9s infinite}
+@keyframes flick{0%,92%,100%{opacity:1}93%{opacity:.93}94%{opacity:1}96%{opacity:.95}}
+#stage.glitch{animation:glitch .9s steps(2) 1}
+@keyframes glitch{0%{transform:translateX(0);filter:none}15%{transform:translateX(-5px) skewX(2deg);filter:hue-rotate(40deg) contrast(1.4)}30%{transform:translateX(4px);filter:blur(1px)}50%{transform:translateX(-2px) skewX(-1deg)}100%{transform:none;filter:none}}
+.cursor{animation:blink 1s steps(2) infinite}
+@media(prefers-reduced-motion:reduce){#fx-grain,#app,#menu-bg,#menu-bg::after,.cursor{animation:none}}
+</style>
+</head><body><div id="app">
+<section id="menu" class="screen active">
+ <div id="menu-bg"></div>
+ <div class="menu-inner">
+  <h1 class="title" data-t="ROOM 404">ROOM 404</h1>
+  <p class="tag">“Some rooms exist only when someone remembers them.”</p>
+  <nav class="menu-nav">
+   <button class="btn" id="b-new">NEW SESSION</button>
+   <button class="btn" id="b-cont">CONTINUE</button>
+   <button class="btn" id="b-set">SETTINGS</button>
+   <button class="btn" id="b-cred">CREDITS</button>
+  </nav>
+ </div>
+</section>
+<section id="game" class="screen">
+ <header class="hud"><button class="btn small" id="b-back">MENU</button><span id="scene-title"></span></header>
+ <div id="stage-wrap"><div id="stage"><div id="scene-art"></div><div id="hotspots"></div><div id="hover-label"></div></div></div>
+ <div id="dialogue"><p id="dlg-text"></p><span id="dlg-more">▼</span></div>
+ <footer id="inventory"></footer>
+</section>
+<div id="modal" hidden><div class="panel" id="panel"></div></div>
+<div id="fx-grain"></div><div id="fx-vignette"></div>
+</div>
+<script>window.R404 = window.R404 || {};
+(function () {
+  const K = 'room404.save.v1', SK = 'room404.settings.v1';
+  const S = {
+    default() { return { scene: 'entrance', flags: {}, items: [], read: [], ending: null }; },
+    has() { return !!S.load(); },
+    load() {
+      try {
+        const d = JSON.parse(localStorage.getItem(K));
+        if (d && typeof d.scene === 'string' && d.flags && Array.isArray(d.items)) return Object.assign(S.default(), d);
+      } catch (e) {}
+      return null;
+    },
+    save(st) { try { localStorage.setItem(K, JSON.stringify(st)); } catch (e) {} },
+    reset() { try { localStorage.removeItem(K); } catch (e) {} },
+    settings() {
+      try { const s = JSON.parse(localStorage.getItem(SK)); if (s) return Object.assign({ vol: 0.5, muted: false }, s); } catch (e) {}
+      return { vol: 0.5, muted: false };
+    },
+    saveSettings(s) { try { localStorage.setItem(SK, JSON.stringify(s)); } catch (e) {} }
+  };
+  R404.save = S;
+})();
+</script><script>(function () {
+  // Optional real files: R404.audio.files.click = 'assets/audio/effects/click.mp3'
+  const A = {
+    ctx: null, master: null, files: {}, set: R404.save.settings(),
+    init() {
+      if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+      const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+      this.ctx = new C(); this.master = this.ctx.createGain(); this.master.connect(this.ctx.destination);
+      this.apply(); this.hum();
+    },
+    apply() { if (this.master) this.master.gain.value = this.set.muted ? 0 : this.set.vol; R404.save.saveSettings(this.set); },
+    hum() {
+      const c = this.ctx, g = c.createGain(); g.gain.value = 0.07;
+      const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 160;
+      [48, 50.2, 96.5].forEach((fr, i) => { const o = c.createOscillator(); o.frequency.value = fr; o.type = i === 2 ? 'triangle' : 'sine'; o.connect(f); o.start(); });
+      const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = 0.07; lg.gain.value = 0.03; lfo.connect(lg); lg.connect(g.gain); lfo.start();
+      f.connect(g); g.connect(this.master);
+    },
+    tone(fr, d, type, vol, to) {
+      const c = this.ctx, o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
+      o.type = type || 'sine'; o.frequency.setValueAtTime(fr, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d);
+      g.gain.setValueAtTime(vol || 0.1, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g); g.connect(this.master); o.start(t); o.stop(t + d);
+    },
+    noise(d, cut, vol) {
+      const c = this.ctx, n = c.sampleRate * d, b = c.createBuffer(1, n, c.sampleRate), data = b.getChannelData(0);
+      for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / n);
+      const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+      f.type = 'lowpass'; f.frequency.value = cut; g.gain.value = vol; s.buffer = b; s.connect(f); f.connect(g); g.connect(this.master); s.start();
+    },
+    play(name) {
+      if (!this.ctx || this.set.muted) return;
+      if (this.files[name]) { try { const a = new Audio(this.files[name]); a.volume = this.set.vol; a.play(); return; } catch (e) {} }
+      switch (name) {
+        case 'click': this.tone(900, 0.04, 'square', 0.04); break;
+        case 'door': this.noise(0.5, 400, 0.5); this.tone(70, 0.4, 'sine', 0.2, 40); break;
+        case 'pickup': this.tone(520, 0.12, 'triangle', 0.1); setTimeout(() => this.tone(780, 0.2, 'triangle', 0.1), 110); break;
+        case 'shift': this.tone(220, 1.2, 'sawtooth', 0.06, 40); this.noise(0.9, 900, 0.25); break;
+        case 'note': this.tone(330, 0.8, 'sine', 0.07); this.tone(392, 1, 'sine', 0.05); break;
+        case 'deny': this.tone(140, 0.15, 'square', 0.06); break;
+        case 'boot': this.noise(0.6, 2000, 0.15); this.tone(60, 0.6, 'sine', 0.1); break;
+      }
+    }
+  };
+  R404.audio = A;
+})();
+</script>
+<script>(function () {
+  const box = () => document.getElementById('dialogue'), txt = () => document.getElementById('dlg-text');
+  const D = { q: [], i: 0, timer: null, typing: false, done: null,
+    say(lines, done) {
+      this.q = Array.isArray(lines) ? lines.slice() : [lines]; this.i = 0; this.done = done || null; this.show();
+    },
+    show() {
+      const line = this.q[this.i], el = txt(); clearInterval(this.timer); el.textContent = ''; this.typing = true;
+      let n = 0; box().classList.remove('more');
+      this.timer = setInterval(() => { el.textContent = line.slice(0, ++n); if (n >= line.length) this.finish(); }, 16);
+    },
+    finish() {
+      clearInterval(this.timer); this.typing = false; txt().textContent = this.q[this.i];
+      box().classList.toggle('more', this.i < this.q.length - 1 || !!this.done);
+    },
+    advance() {
+      if (!this.q.length) return;
+      if (this.typing) return this.finish();
+      if (this.i < this.q.length - 1) { this.i++; this.show(); }
+      else if (this.done) { const d = this.done; this.done = null; box().classList.remove('more'); d(); }
+    },
+    clear() { clearInterval(this.timer); this.q = []; this.done = null; txt().textContent = ''; box().classList.remove('more'); }
+  };
+  R404.dialogue = D;
+})();
+</script><script>(function () {
+  const ITEMS = {
+    KEY: 'A small brass key. The teeth are worn flat, as if used every day.',
+    PHOTOGRAPH: 'A photograph of two people. One of them has no face.',
+    CASSETTE: 'A cassette with no label. Something hisses inside it.',
+    'ARCHIVE CARD': 'A plastic card stamped ARCHIVE. A single line reads: ROOM_404.'
+  };
+  const Inv = {
+    items: ITEMS, selected: null,
+    has(id) { return R404.game.state.items.includes(id); },
+    add(id) { const s = R404.game.state; if (!s.items.includes(id)) { s.items.push(id); R404.game.persist(); } this.render(); },
+    select(id) {
+      this.selected = (this.selected === id) ? null : id;
+      document.body.classList.toggle('has-sel', !!this.selected);
+      this.render();
+      if (this.selected) R404.dialogue.say(this.selected + ': ' + ITEMS[this.selected] + ' (Tap an object to use it.)');
+    },
+    render() {
+      const el = document.getElementById('inventory'), list = R404.game.state ? R404.game.state.items : [];
+      el.innerHTML = '';
+      if (!list.length) { el.innerHTML = '<span class="inv-empty">NO ITEMS</span>'; return; }
+      list.forEach(id => {
+        const b = document.createElement('button');
+        b.className = 'btn slot' + (id === this.selected ? ' sel' : ''); b.textContent = id;
+        b.onclick = () => { R404.audio.play('click'); this.select(id); };
+        el.appendChild(b);
+      });
+    }
+  };
+  R404.inventory = Inv;
+})();
+</script>
+<script>(function () {
+  const defs = (p, body) => body.replace(/\{p\}/g, p);
+  const entrance = {
+    title: 'ENTRANCE',
+    draw(g, p = '') {
+      return defs(p, `<svg viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="{p}eg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4442"/><stop offset="1" stop-color="#2b2829"/></linearGradient>
+<radialGradient id="{p}gl" cx=".5" cy=".5"><stop offset="0" stop-color="#A18C78" stop-opacity=".55"/><stop offset="1" stop-color="#A18C78" stop-opacity="0"/></radialGradient></defs>
+<rect width="160" height="90" fill="url(#{p}eg)"/><rect y="72" width="160" height="18" fill="#252326"/>
+<rect x="55" y="8" width="50" height="66" fill="#2a2423" stroke="#111113" stroke-width="1.5"/>
+<rect x="60" y="13" width="40" height="26" fill="none" stroke="#1b1718"/><rect x="60" y="44" width="40" height="26" fill="none" stroke="#1b1718"/>
+<rect x="72" y="16" width="16" height="8" fill="#A18C78" opacity=".8"/>
+<text x="80" y="22.3" text-anchor="middle" font-size="5" fill="#111113" font-family="monospace">404</text>
+<circle cx="80" cy="34" r="2" fill="#111113" stroke="#A18C78" stroke-width=".6"/>
+<ellipse cx="80" cy="74" rx="26" ry="3" fill="url(#{p}gl)"/>
+<rect x="58" y="76" width="44" height="8" fill="#3a3534" stroke="#2b2829" stroke-width=".4"/>
+<rect x="118" y="30" width="14" height="18" fill="#B8B0A2" opacity=".75"/>
+<path d="M120 35h10M120 38h10M120 41h7" stroke="#514A48" stroke-width=".7"/></svg>`);
+    },
+    hotspots: [
+      { id: 'door', label: 'DOOR', x: 55, y: 8, w: 50, h: 66, on(G) {
+        if (!G.has('entered')) {
+          G.flag('entered'); G.audio('note');
+          G.say(['The door is unlocked. It was never locked.', 'A notice, pinned beside it: "If the light is on, someone has already been here."', 'You push the door open.'],
+            () => { G.audio('door'); G.go('apartment'); });
+        } else { G.audio('door'); G.go('apartment'); }
+      } },
+      { id: 'mat', label: 'MAT', x: 58, y: 76, w: 44, h: 8, on(G) { G.say('The mat says WELCOME, but the letters have been scrubbed off. The dust under it is undisturbed.'); } },
+      { id: 'peep', label: 'PEEPHOLE', x: 76, y: 30, w: 8, h: 8, on(G) { G.say('You look through from the outside. A lit room, and a chair facing the door.'); } },
+      { id: 'num', label: 'NUMBER 404', x: 72, y: 16, w: 16, h: 8, on(G) { G.say('404. The brass is warm, like it was just touched.'); } },
+      { id: 'note', label: 'NOTICE', x: 118, y: 30, w: 14, h: 18, on(G) { G.audio('note'); G.say('"Collect your belongings from apartment 404. If the light is on, someone has already been here."'); } }
+    ]
+  };
+
+  const apartment = {
+    title: 'APARTMENT',
+    draw(g, p = '') {
+      const s = g.has('shifted'), lamp = g.has('lamp'), open = g.has('wardrobeOpen');
+      return defs(p, `<svg viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice">
+<defs><radialGradient id="{p}lg" cx=".5" cy=".5"><stop offset="0" stop-color="#A18C78" stop-opacity=".45"/><stop offset="1" stop-color="#A18C78" stop-opacity="0"/></radialGradient></defs>
+<rect width="160" height="68" fill="#514A48"/><rect y="68" width="160" height="22" fill="#252326"/><rect width="160" height="68" fill="#111113" opacity="${lamp ? 0.25 : 0.5}"/>
+<rect x="10" y="14" width="22" height="40" rx="2" fill="#1b1b1e" stroke="#A18C78" stroke-width="1"/>
+${s ? '<rect x="12" y="16" width="18" height="36" fill="#39352f"/><rect x="17" y="24" width="8" height="28" fill="#1b1b1e" stroke="#514A48" stroke-width=".4"/>' : '<rect x="16" y="30" width="10" height="22" fill="#2e2b2d"/><circle cx="21" cy="26" r="4" fill="#2e2b2d"/>'}
+<circle cx="52" cy="18" r="8" fill="#B8B0A2" opacity=".85" stroke="#252326" stroke-width="1"/>
+<path d="${s ? 'M52 18V24.5M52 18L47 20.5' : 'M52 18V12.5M52 18L56 18'}" stroke="#111113" stroke-width="1"/>
+<rect x="70" y="14" width="16" height="20" fill="#2d2a2b" stroke="#A18C78" stroke-width=".7"/>
+${s ? '<circle cx="78" cy="22" r="3" fill="#B8B0A2"/><circle cx="77" cy="21.5" r=".4" fill="#111113"/><circle cx="79" cy="21.5" r=".4" fill="#111113"/><rect x="74" y="25" width="8" height="8" fill="#8b7c6d"/>' : '<circle cx="75" cy="22" r="2.6" fill="#B8B0A2"/><rect x="72" y="25" width="6" height="8" fill="#8b7c6d"/><circle cx="82" cy="22" r="2.6" fill="#252326" stroke="#B8B0A2" stroke-width=".3"/><rect x="79" y="25" width="6" height="8" fill="#6d5f52"/>'}
+<rect x="108" y="8" width="36" height="62" fill="#3a3230" stroke="#111113" stroke-width="1"/>
+${open ? '<rect x="110" y="10" width="32" height="58" fill="#0e0d0e"/><path d="M114 14h2v18h-2zM122 14h2v18h-2z" fill="#514A48"/>' : '<path d="M126 8v62" stroke="#111113"/><circle cx="123" cy="40" r="1" fill="#A18C78"/><circle cx="129" cy="40" r="1" fill="#A18C78"/>'}
+<rect x="8" y="58" width="96" height="4" fill="#3a3230"/><rect x="10" y="62" width="3" height="8" fill="#3a3230"/><rect x="99" y="62" width="3" height="8" fill="#3a3230"/>
+<rect x="56" y="62" width="18" height="6" fill="#2b2526" stroke="#514A48" stroke-width=".4"/><circle cx="65" cy="65" r=".8" fill="#A18C78"/>
+<rect x="14" y="56" width="10" height="2" fill="#514A48"/><path d="M19 56V47" stroke="#514A48" stroke-width="1"/>
+<path d="M12 44h14l-4 6h-6z" fill="${lamp ? '#A18C78' : '#6b5d52'}"/>
+${lamp ? `<ellipse cx="22" cy="55" rx="55" ry="38" fill="url(#{p}lg)"/>` : ''}
+<rect x="50" y="38" width="24" height="18" fill="#1b1b1e" stroke="#B8B0A2" stroke-width=".6"/><rect x="52" y="40" width="20" height="13" fill="#0d1a12"/>
+<text x="53" y="45" font-size="2.3" fill="#A0B59B" font-family="monospace">WELCOME BACK,</text><text x="53" y="49" font-size="2.3" fill="#A0B59B" font-family="monospace">USER 404.<tspan class="cursor"> _</tspan></text>
+<rect x="146" y="20" width="12" height="50" fill="#2a2423" stroke="#111113"/><circle cx="149" cy="46" r="1" fill="#A18C78"/></svg>`);
+    },
+    hotspots: [
+      { id: 'mirror', label: 'MIRROR', x: 10, y: 14, w: 22, h: 40, on(G) {
+        G.say(G.has('shifted') ? 'The mirror shows this room, but empty and brightly lit. You are not in it.' : 'Your reflection is half a second late. It waits for you to finish blinking.'); } },
+      { id: 'clock', label: 'CLOCK', x: 44, y: 10, w: 16, h: 16, on(G) {
+        G.say(G.has('shifted') ? 'The hands have jumped to 4:04. The ticking has stopped, but you can still hear it.' : 'The clock reads 3:17. Every time you look away, it still reads 3:17.'); } },
+      { id: 'photo', label: 'PHOTOGRAPH', x: 70, y: 14, w: 16, h: 20, on(G) {
+        G.say(G.has('shifted') ? 'The faceless figure is gone. The other one now looks straight at you, and its face is yours.' : 'Two people stand side by side. One smiles. The other has no face at all, only smooth skin.'); } },
+      { id: 'wardrobe', label: 'WARDROBE', x: 108, y: 8, w: 36, h: 62, on(G) {
+        if (!G.has('wardrobeOpen')) {
+          G.flag('wardrobeOpen'); G.audio('door'); G.refresh();
+          G.say('The wardrobe opens without a sound. Empty hangers sway. A KEY lies on the floor.', () => { G.give('KEY'); G.say('You take the KEY.'); G.checkShift(); });
+        } else G.say('Empty hangers. They sway although the air is still.'); } },
+      { id: 'lamp', label: 'DESK LAMP', x: 12, y: 42, w: 16, h: 16, on(G) {
+        const on = !G.has('lamp'); G.flag('lamp', on); G.audio('click'); G.refresh();
+        G.say(on ? 'The lamp comes on. "If the light is on, someone has already been here."' : 'You switch the lamp off. The room is darker than it was before.');
+        if (on) G.checkShift(); } },
+      { id: 'computer', label: 'COMPUTER', x: 50, y: 38, w: 24, h: 18, on(G) {
+        G.audio('boot'); G.flag('sawComputer'); G.say(['The screen reads: WELCOME BACK, USER 404.', 'The keyboard does not respond yet. Something is still missing.']); } },
+      { id: 'drawer', label: 'DRAWER', x: 56, y: 62, w: 18, h: 6, on(G) {
+        G.audio('deny'); G.say(G.has('drawerOpen') ? 'The drawer is empty now.' : 'The drawer is locked. The keyhole is small and brass.'); },
+        use: { KEY(G) {
+          if (G.has('drawerOpen')) return G.say('The drawer is already open and empty.');
+          G.flag('drawerOpen'); G.audio('pickup'); G.give('ARCHIVE CARD'); G.say('The key fits. Inside is an ARCHIVE CARD. You take it.'); } } },
+      { id: 'exit', label: 'FRONT DOOR', x: 146, y: 20, w: 12, h: 50, on(G) { G.audio('door'); G.go('entrance'); } }
+    ]
+  };
+  R404.scenes = { entrance, apartment };
+})();
+</script><script>(function () {
+  R404.interact = {
+    click(hs) {
+      const A = R404.audio, G = R404.game, Inv = R404.inventory, sel = Inv.selected;
+      A.play('click');
+      if (sel) {
+        if (hs.use && hs.use[sel]) { Inv.selected = null; document.body.classList.remove('has-sel'); Inv.render(); hs.use[sel](G); }
+        else { A.play('deny'); G.say('The ' + sel + ' has no use on the ' + hs.label + '.'); }
+        return;
+      }
+      hs.on(G);
+    }
+  };
+})();
+</script>
+<script>// Stage 5: endings are defined here. Not wired yet — see README roadmap.
+R404.endings = {
+  deleted:  { title: 'DELETED',  text: ['Record successfully deleted.'] },
+  restored: { title: 'RESTORED', text: ['Session successfully restored.'] },
+  unknown:  { title: 'UNKNOWN',  text: ['Are you sure you were ever here?', 'USER NOT FOUND.'] }
+};
+</script><script>(function () {
+  const $ = id => document.getElementById(id);
+  const G = {
+    state: null,
+    start(fresh) {
+      this.state = fresh ? R404.save.default() : (R404.save.load() || R404.save.default());
+      if (!R404.scenes[this.state.scene]) this.state.scene = 'entrance';
+      R404.inventory.selected = null; document.body.classList.remove('has-sel');
+      R404.showScreen('game'); R404.dialogue.clear(); R404.inventory.render();
+      this.go(this.state.scene, true);
+      if (fresh) R404.dialogue.say('A notification brought you here: collect your belongings from apartment 404. Tap the door.');
+    },
+    persist() { R404.save.save(this.state); },
+    has(k) { return !!this.state.flags[k]; },
+    flag(k, v = true) { this.state.flags[k] = v; this.persist(); },
+    give(id) { R404.inventory.add(id); R404.audio.play('pickup'); },
+    audio(n) { R404.audio.play(n); },
+    say(t, done) { R404.dialogue.say(t, done); },
+    go(id, instant) {
+      const stage = $('stage'), apply = () => { this.state.scene = id; this.persist(); this.refresh(); stage.classList.remove('fading'); };
+      if (instant) return apply();
+      stage.classList.add('fading'); setTimeout(apply, 600);
+    },
+    refresh() {
+      const sc = R404.scenes[this.state.scene];
+      $('scene-art').innerHTML = sc.draw(this);
+      $('scene-title').textContent = sc.title;
+      const hs = $('hotspots'); hs.innerHTML = '';
+      sc.hotspots.forEach(h => {
+        const d = document.createElement('div');
+        d.className = 'hs'; d.tabIndex = 0; d.setAttribute('role', 'button'); d.setAttribute('aria-label', h.label);
+        d.style.cssText = `left:${h.x / 1.6}%;top:${h.y / 0.9}%;width:${h.w / 1.6}%;height:${h.h / 0.9}%`;
+        d.onclick = () => R404.interact.click(h);
+        d.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); R404.interact.click(h); } };
+        d.onmouseenter = d.onfocus = () => { const l = $('hover-label'); l.textContent = h.label; l.classList.add('on'); };
+        d.onmouseleave = d.onblur = () => $('hover-label').classList.remove('on');
+        hs.appendChild(d);
+      });
+    },
+    checkShift() {
+      if (this.has('shifted') || !this.has('lamp') || !R404.inventory.has('KEY')) return;
+      this.flag('shifted'); this.audio('shift');
+      const st = $('stage'); st.classList.remove('glitch'); void st.offsetWidth; st.classList.add('glitch');
+      setTimeout(() => { this.refresh(); this.say('The room shifts. Something in it has changed.'); }, 450);
+    }
+  };
+  R404.game = G;
+})();
+</script><script>(function () {
+  const $ = id => document.getElementById(id), A = R404.audio, S = R404.save;
+  R404.showScreen = id => document.querySelectorAll('.screen').forEach(e => e.classList.toggle('active', e.id === id));
+  const modal = (html, bind) => { $('panel').innerHTML = html; $('modal').hidden = false; bind && bind($('panel')); };
+  const close = () => { $('modal').hidden = true; };
+  const confirmBox = (text, yes) => modal(`<p>${text}</p><div class="row"><button class="btn" id="y">YES</button><button class="btn" id="n">CANCEL</button></div>`,
+    p => { p.querySelector('#y').onclick = () => { close(); yes(); }; p.querySelector('#n').onclick = close; });
+  const refreshMenu = () => { $('b-cont').disabled = !S.has(); };
+  const unlock = () => A.init();
+  ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, unlock, { once: true }));
+  document.addEventListener('click', e => { if (e.target.closest('.btn')) A.play('click'); });
+
+  $('menu-bg').innerHTML = R404.scenes.apartment.draw({ has: k => k === 'lamp' }, 'm');
+  $('b-new').onclick = () => S.has() ? confirmBox('A saved session exists. Start a new one and overwrite it?', () => { S.reset(); R404.game.start(true); }) : R404.game.start(true);
+  $('b-cont').onclick = () => R404.game.start(false);
+  $('b-set').onclick = () => modal(`<h2>SETTINGS</h2><label>Volume<input type="range" id="vol" min="0" max="1" step="0.05" value="${A.set.vol}"></label>
+    <div class="row"><label><input type="checkbox" id="mute" ${A.set.muted ? 'checked' : ''}> Mute</label></div>
+    <div class="row"><button class="btn" id="rst">RESET PROGRESS</button><button class="btn" id="x">CLOSE</button></div>`, p => {
+    p.querySelector('#vol').oninput = e => { A.set.vol = +e.target.value; A.apply(); };
+    p.querySelector('#mute').onchange = e => { A.set.muted = e.target.checked; A.apply(); };
+    p.querySelector('#rst').onclick = () => confirmBox('Delete all saved progress?', () => { S.reset(); refreshMenu(); });
+    p.querySelector('#x').onclick = close;
+  });
+  $('b-cred').onclick = () => modal('<h2>CREDITS</h2><p>ROOM 404 — prototype.<br>Design, code and placeholder art: generated. All visuals are SVG placeholders; audio is synthesized (Web Audio).</p><div class="row"><button class="btn" id="x">CLOSE</button></div>', p => p.querySelector('#x').onclick = close);
+  $('b-back').onclick = () => { R404.dialogue.clear(); R404.showScreen('menu'); refreshMenu(); };
+  $('dialogue').onclick = () => R404.dialogue.advance();
+  refreshMenu();
+})();
+</script>
+</body></html>
