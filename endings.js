@@ -1,0 +1,1 @@
+R404.endings={deleted:{title:'ENDING 01 / DELETED',text:'Record successfully deleted.'},restored:{title:'ENDING 02 / RESTORED',text:'Session successfully restored.'},unknown:{title:'ENDING 03 / UNKNOWN',text:'Are you sure you were ever here?'}};

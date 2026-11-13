@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111113"><meta name="description" content="ROOM 404 — a surreal point-and-click psychological horror experience."><title>ROOM 404 — A Surreal Horror Game</title>
+<link rel="stylesheet" href="css/main.css"><link rel="stylesheet" href="css/menu.css">
+<link rel="stylesheet" href="css/game.css"><link rel="stylesheet" href="css/effects.css">
+</head><body><div id="app">
+<section id="menu" class="screen active">
+ <div id="menu-bg"></div>
+ <div class="menu-inner">
+  <h1 class="title" data-t="ROOM 404">ROOM 404</h1>
+  <p class="tag">“Some rooms exist only when someone remembers them.”</p>
+  <nav class="menu-nav">
+   <button class="btn" id="b-new">NEW SESSION</button>
+   <button class="btn" id="b-cont">CONTINUE</button>
+   <button class="btn" id="b-set">SETTINGS</button>
+   <button class="btn" id="b-cred">CREDITS</button>
+  </nav>
+ </div>
+</section>
+<section id="game" class="screen">
+ <header class="hud"><button class="btn small" id="b-back">MENU</button><span id="scene-title"></span></header>
+ <div id="stage-wrap"><div id="stage"><div id="scene-art"></div><div id="hotspots"></div><div id="hover-label"></div></div></div>
+ <div id="dialogue"><p id="dlg-text"></p><span id="dlg-more">▼</span></div>
+ <footer id="inventory"></footer>
+</section>
+<div id="modal" hidden><div class="panel" id="panel"></div></div>
+<div id="fx-grain"></div><div id="fx-vignette"></div>
+</div>
+<script src="js/save.js"></script><script src="js/audio.js"></script>
+<script src="js/dialogue.js"></script><script src="js/inventory.js"></script>
+<script src="js/scenes.js"></script><script src="js/interactions.js"></script>
+<script src="js/endings.js"></script><script src="js/game.js"></script><script src="js/main.js"></script>
+</body></html>
