@@ -1,1 +1,0 @@
-(function(){R404.interact={click(h){const G=R404.game,Inv=R404.inventory,sel=Inv.selected;R404.audio.play('click');if(sel){if(h.use&&h.use[sel]){Inv.selected=null;document.body.classList.remove('has-sel');Inv.render();h.use[sel](G)}else{R404.audio.play('deny');G.say('The '+sel+' does not seem to belong here.')}return}h.on(G)}}})();
